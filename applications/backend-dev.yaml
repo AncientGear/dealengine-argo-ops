@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: backend-dev
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: git@github.com:AncientGear/dealengine-argo-ops.git
+    targetRevision: main
+    path: charts/backend
+
+    helm:
+      releaseName: backend
+      valueFiles:
+        - ../../environments/dev/values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backend-dev
