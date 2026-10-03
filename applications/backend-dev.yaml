@@ -9,7 +9,7 @@ spec:
   project: default
 
   source:
-    repoURL: git@github.com:AncientGear/dealengine-argo-ops.git
+    repoURL: https://github.com/AncientGear/dealengine-argo-ops.git
     targetRevision: main
     path: charts/backend
 
