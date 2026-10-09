@@ -20,5 +20,8 @@ tolerations: []
 
 existingSecret: ""
 
+rdsCa:
+  enabled: false
+
 httpRoute:
   enabled: false

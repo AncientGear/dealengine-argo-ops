@@ -64,6 +64,13 @@ spec:
                   name: {{ .Values.existingSecret | quote }}
                   key: TOKEN_SECRET
 
+          {{- if .Values.rdsCa.enabled }}
+          volumeMounts:
+            - name: rds-ca
+              mountPath: /etc/rds-ca
+              readOnly: true
+          {{- end }}
+
           livenessProbe:
             httpGet:
               path: /healthz
@@ -81,6 +88,16 @@ spec:
 
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+
+      {{- if .Values.rdsCa.enabled }}
+      volumes:
+        - name: rds-ca
+          configMap:
+            name: {{ .Release.Name }}-rds-ca
+            items:
+              - key: us-east-2-bundle.pem
+                path: us-east-2-bundle.pem
+      {{- end }}
 
       {{- with .Values.tolerations }}
       tolerations:

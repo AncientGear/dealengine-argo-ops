@@ -2,9 +2,12 @@ replicaCount: 1
 
 image:
   repository: 989200477899.dkr.ecr.us-east-2.amazonaws.com/dev-dealengine-ecr-repo
-  digest: sha256:c214109f16b199b6cac916bbb5b3d0e543dfa231929b7c2360f5be6e697afb63
+  digest: sha256:d3d5f8bc472bf1ace99be5fcbffce4b7e1778cc4ebd111435a17b03851493434
 
 existingSecret: backend-runtime
+
+rdsCa:
+  enabled: true
 
 tolerations:
   - key: workload
