@@ -1,0 +1,24 @@
+{{- if .Values.targetGroupConfiguration.enabled }}
+apiVersion: gateway.k8s.aws/v1
+kind: TargetGroupConfiguration
+
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+spec:
+  targetReference:
+    group: ""
+    kind: Service
+    name: {{ .Release.Name }}
+
+  defaultConfiguration:
+    healthCheckConfig:
+      healthCheckPath: {{ required "targetGroupConfiguration.healthCheckPath is required" .Values.targetGroupConfiguration.healthCheckPath | quote }}
+      healthCheckPort: traffic-port
+      healthCheckProtocol: HTTP
+      matcher:
+        httpCode: "200"
+{{- end }}

@@ -25,3 +25,7 @@ rdsCa:
 
 httpRoute:
   enabled: false
+
+targetGroupConfiguration:
+  enabled: false
+  healthCheckPath: /readyz

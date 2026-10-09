@@ -22,3 +22,7 @@ httpRoute:
     name: gateway-dev
     namespace: gateway-system
     sectionName: https
+
+targetGroupConfiguration:
+  enabled: true
+  healthCheckPath: /readyz
