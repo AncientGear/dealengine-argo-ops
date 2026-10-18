@@ -57,10 +57,11 @@ It does not rebuild the image, rewrite Git history or restore database data.
 3. Run the offline checks below and review the diff.
 4. Open a PR against `main`, recording the previous and candidate digests,
    compatibility evidence and check results.
-5. Review and merge the PR before syncing Argo.
+5. Confirm the candidate and deployment impact before merging the PR.
+   With auto-sync enabled, merging the digest change authorizes deployment.
 6. Verify remote `main` contains the intended digest.
-7. Perform an explicitly authorized manual sync of `backend-dev`.
-   Auto-sync is not configured in the currently verified Application.
+7. Observe Argo reconcile `backend-dev` automatically. Do not issue a
+   second manual sync while reconciliation is running.
 8. Verify Argo synchronization and health, the Deployment image,
    pod readiness, ALB target health and the public API.
 
@@ -68,7 +69,8 @@ Do not use `kubectl rollout undo` as the permanent recovery mechanism:
 it does not update the desired state in Git.
 
 If recovery fails, stop and diagnose. Returning to the recorded digest
-requires another reviewed GitOps change and an authorized sync.
+requires another reviewed GitOps change; merging it triggers auto-sync
+once the Application policy is active.
 
 ### Offline checks
 
@@ -82,3 +84,18 @@ Run from the `argo-ops` repository:
 
 These checks do not prove image compatibility, live database access or
 successful recovery. A real rollback test requires a compatible release.
+
+ ## Synchronization policy
+
+The intended policy for dev, staging and production is automatic sync,
+with automatic pruning and self-healing disabled. Each environment must
+have its own reviewed Application and values before activation.
+
+Production auto-sync is an educational project choice, not a complete
+production deployment control. For production use, protect the tracked
+branch and require PR approvals and successful checks before merge.
+PR approval alone does not trigger deployment; merging the desired-state
+change into the tracked branch does.
+
+During initial migration, verify the live Application policy:
+committing its YAML does not by itself update the Application resource.
