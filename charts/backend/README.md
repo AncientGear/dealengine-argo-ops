@@ -99,3 +99,57 @@ change into the tracked branch does.
 
 During initial migration, verify the live Application policy:
 committing its YAML does not by itself update the Application resource.
+
+## Dev database application credentials
+
+The dev backend uses PostgreSQL role `dealengine_backend_dev` in `my_db`,
+not the RDS-managed master credentials. Keep master password rotation enabled.
+
+Runtime privileges are limited to:
+- CONNECT to the database and USAGE on the public schema.
+- SELECT, INSERT and UPDATE on tickets.
+- SELECT on admins.
+
+The runtime role does not own tables or perform migrations.
+Local administrator registration is disabled in Kubernetes.
+
+The application connection is stored in the existing backend-runtime
+secret. Preserve TOKEN_SECRET and all unrelated fields during updates.
+Passwords must never enter Git, Terraform state, command arguments or logs.
+
+## Manual application password rotation
+
+This procedure is manual and not atomic. Schedule an operator-controlled
+window: existing connections may survive a password change, but new
+connections can fail until the runtime credentials and pods are updated.
+
+1. Keep a working administrative connection over verified TLS.
+2. Record the current runtime secret version and healthy image digest.
+    Securely retain the previous application password until verification ends.
+3. Generate a new independent password in an approved password manager.
+    The current URL-entry procedure uses 48 random alphanumeric characters.
+4. In administrative psql, set session password_encryption to scram-sha-256
+    and use \password dealengine_backend_dev. Never use a password SQL literal.
+5. Test a separate application-user connection with verified TLS.
+6. Update only the username/password components of DATABASE_URL in Secrets
+    Manager. Preserve the endpoint, database, TLS options and TOKEN_SECRET.
+7. Request ESO reconciliation and verify Ready=True with a refresh timestamp
+    later than the secret update.
+8. Perform an authorized Deployment rolling restart and wait for completion.
+    Secret-backed environment variables do not update existing processes.
+9. Verify readiness, the public API and PostgreSQL connection metadata showing
+    the new pod using dealengine_backend_dev over TLS.
+10. Securely retire the previous password after successful verification.
+
+Do not rotate again or retry restarts blindly after a failure.
+Changing the Secret alone does not restore a password already changed in
+PostgreSQL. Recovery must coordinate the database password, runtime secret,
+ESO reconciliation and pod renewal.
+
+Do not restore a historical master-password URL as the normal fallback.
+Application password rotation is not automated by this runbook.
+
+The initial migration was verified with a healthy pod, public API HTTP 200
+and a PostgreSQL connection attributed to the application role over TLSv1.3.
+A subsequent password-rotation exercise and full application CRUD were
+not performed as part of that migration.
